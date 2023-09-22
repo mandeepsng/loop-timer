@@ -73,7 +73,7 @@ Menu.setApplicationMenu(menu)
 const createWindow = () => {
   win = new BrowserWindow({
     width: 1000,
-    height: 750,
+    height: 720,
     resizable: false,
     skipTaskbar: true,
     webPreferences: {
