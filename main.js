@@ -204,7 +204,7 @@ console.log('isWindows = ', isWindows )
     // console.log('hererer  fff')
   })
 
-  tray.setToolTip('Rvs Tracker')
+  tray.setToolTip('Loop Reminder')
 
   tray.setContextMenu(menu)
 
@@ -224,8 +224,8 @@ console.log('isWindows = ', isWindows )
     // win.minimize()
     // On macOS, quit the app when all windows are closed
     // if (process.platform === 'darwin') {
-      // app.quit();
-    // }
+      // }
+        app.quit();
   });
 
 
