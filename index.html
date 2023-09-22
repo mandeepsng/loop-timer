@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Timer</title>
+
+        <!-- Fonts -->
+        <link href="https://fonts.bunny.net/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+        <!-- Styles -->
+        <style>
+            /*
+            *
+            * ==========================================
+            * CUSTOM UTIL CLASSES
+            * ==========================================
+            */
+            .nav-pills-custom .nav-link {
+                color: #aaa;
+                background: #fff;
+                position: relative;
+            }
+
+            .nav-pills-custom .nav-link.active {
+                color: #45b649;
+                background: #fff;
+            }
+
+
+            /* Add indicator arrow for the active tab */
+            @media (min-width: 992px) {
+                .nav-pills-custom .nav-link::before {
+                    content: '';
+                    display: block;
+                    border-top: 8px solid transparent;
+                    border-left: 10px solid #fff;
+                    border-bottom: 8px solid transparent;
+                    position: absolute;
+                    top: 50%;
+                    right: -10px;
+                    transform: translateY(-50%);
+                    opacity: 0;
+                }
+            }
+
+            .nav-pills-custom .nav-link.active::before {
+                opacity: 1;
+            }
+
+
+
+
+
+            /*
+            *
+            * ==========================================
+            * FOR DEMO PURPOSE
+            * ==========================================
+            */
+            body {
+                min-height: 100vh;
+                background: linear-gradient(to left, #dce35b, #45b649);
+            }
+
+
+            @import url("https://fonts.googleapis.com/css?family=Ubuntu:300|Open+Sans");
+
+            :root {
+                --font-timer: "Ubuntu", sans-serif;
+                --font-body: "Open Sans", sans-serif;
+                --color-highlight: #f5f4f4;
+                --color-text: #1f1c1c;
+                --color-bg: #c7c5c5;
+                --color-bg-l: #ebebeb;
+                --color-app: #fff;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* body {
+                width: 100%;
+                min-height: 100vh;
+                font-family: var(--font-body);
+                color: var(--color-text);
+                background: linear-gradient(to top right, var(--color-bg), var(--color-bg-l));
+            } */
+            /* horizontally center the wrapping container and notably reduce its width, to emulate a mobile device */
+            .app {
+                max-width: 250px;
+                margin: 1rem auto;
+                padding: 0.5rem;
+                border-radius: 20px;
+                background: var(--color-app);
+                box-shadow: 0 0 15px -5px var(--color-bg), -4px 2px 10px var(--color-bg);
+            }
+
+            /* for the timer, add plenty of whitespace atop and below the headings */
+            .app__timer {
+                padding: 5rem 1rem;
+                text-align: center;
+                font-family: var(--font-timer);
+                line-height: 2;
+                background: var(--color-app);
+                /* position relative to absolute position the pseudo element */
+                position: relative;
+            }
+            /* through a pseudo element add a ring around the headings */
+            .app__timer:before {
+                position: absolute;
+                content: "";
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 75%;
+                height: 75%;
+                border: 1px solid var(--color-bg-l);
+                border-radius: 50%;
+                transition: border 0.2s ease-out;
+            }
+            /* with a class of active, show the ring with more intensity */
+            .app__timer.active:before {
+                border: 1px solid var(--color-bg);
+            }
+
+            /* reduce the importance of the h3 element in comparison to the main h1 heading */
+            .app__timer h1 {
+                font-size: 1.8rem;
+                font-weight: 300;
+            }
+            .app__timer h3 {
+                font-size: 1rem;
+                font-weight: 300;
+            }
+
+            /* for the options, display them in a single column, atop one another
+            cap the height to allow for vertical scroll
+            ! remember to set flex-shrink to 0 for the flex items
+            */
+            .app__options {
+                padding: 0 1rem;
+                display: flex;
+                flex-direction: column;
+                overflow-y: auto;
+                height: 120px;
+                /* the margin allows to show the scrollbar also within the boundaries of the main container */
+                margin: 0.5rem;
+            }
+
+            /* minor stylistic choices regarding the scrollbar */
+            .app__options::-webkit-scrollbar {
+                width: 0.15rem;
+            }
+            .app__options::-webkit-scrollbar-track {
+                box-shadow: inset 0 0 6px var(--color-bg-l);
+            }
+            .app__options::-webkit-scrollbar-thumb {
+                background: var(--color-bg);
+                border-radius: 5px;
+            }
+
+            /* for the input element and the buttons, add the same property value pairs to style them as rather straightforward strings of text */
+            .app__options form input,
+            .app__options button {
+                flex-shrink: 0;
+                text-align: left;
+                background: none;
+                border: none;
+                font-family: inherit;
+                color: inherit;
+                padding: 1rem 0.5rem;
+                border-bottom: 1px solid var(--color-bg-l);
+                transition: all 0.2s ease-out;
+            }
+            /* on hover slightly show a colored background */
+            .app__options form input:hover,
+            .app__options button:hover {
+                background: var(--color-highlight);
+            }
+
+            /* for the input individually, stretch its width to cover the entirety of the viewport and apply the same color of the text to the placeholder as well */
+            .app__options form input {
+                width: 100%;
+            }
+            .app__options form input::placeholder {
+                color: inherit;
+            }
+
+
+            body{background-color:#FFEBEE}.card{width:400px;background-color:#fff;border:none;border-radius: 12px}label.radio{cursor: pointer;width: 100%}label.radio input{position: absolute;top: 0;left: 0;visibility: hidden;pointer-events: none}label.radio span{padding: 7px 14px;border: 2px solid #eee;display: inline-block;color: #039be5;border-radius: 10px;width: 100%;height: 48px;line-height: 27px}label.radio input:checked+span{border-color: #039BE5;background-color: #81D4FA;color: #fff;border-radius: 9px;height: 48px;line-height: 27px}.form-control{margin-top: 10px;height: 48px;border: 2px solid #eee;border-radius: 10px}.form-control:focus{box-shadow: none;border: 2px solid #039BE5}.agree-text{font-size: 12px}.terms{font-size: 12px;text-decoration: none;color: #039BE5}.confirm-button{height: 50px;border-radius: 10px}
+
+        </style>
+    </head>
+    <body>
+       <!-- Demo header-->
+        <section class="py-5 header">
+            <div class="container py-4">
+                <!-- <header class="text-center mb-5 pb-5 text-white">
+                    <h1 class="display-4">Timer</h1>
+                    <p class="font-italic mb-1">Making advantage of Bootstrap 4 components, easily build an awesome tabbed interface.</p>
+                    
+                </header> -->
+
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <!-- Tabs nav -->
+                        <div class="nav flex-column nav-pills nav-pills-custom" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link mb-3 p-3 shadow active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="false">
+                                <i class="fa fa-user-circle-o mr-2"></i>
+                                <span class="font-weight-bold small text-uppercase">Personal information</span></a>
+
+                            <a class="nav-link mb-3 p-3 shadow" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true">
+                                <i class="fa fa-calendar-minus-o mr-2"></i>
+                                <span class="font-weight-bold small text-uppercase">Timer</span></a>
+
+                            </div>
+                    </div>
+
+
+                    <div class="col-md-6">
+                        <!-- Tabs content -->
+                        <div class="tab-content" id="v-pills-tabContent">
+                            <div class="tab-pane fade shadow rounded bg-white show active p-5" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                                <h4 class="font-italic mb-4">Personal information</h4>
+                                <div class="container mt-5 mb-5 d-flex justify-content-center">
+                                    <div class="card px-1 py-4">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <div class="input-group"> <input class="form-control" type="text" placeholder="Nick name"> </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <div class="form-group">
+                                                        <div class="input-group"> 
+
+                                                            <input class="form-control" type="text" placeholder="message">
+                                                            
+                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class=" d-flex flex-column text-center px-5 mb-3"> 
+                                                
+                                                </div> <button class="btn btn-primary btn-block confirm-button">Save</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tab-pane fade shadow rounded bg-white p-5" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                                <h4 class="font-italic mb-4">Timer</h4>
+
+                                <main class="app">
+                                    <!-- container showing the countdown as well as when the timer will end, in two headings -->
+                                    <div class="app__timer">
+                                        <h1>00:00</h1>
+                                        <!-- <h3>Break?</h3>  -->
+                                        </div>
+                                    
+                                        <!-- container allowing to select the number of minutes (or seconds) to run the timer -->
+                                        <div class="app__options">
+                                        <!-- immediately the option to set a custom number of minutes through a form element -->
+                                        <form name="customTimer">
+                                            <input
+                                            name="minutes"
+                                            id="minutes"
+                                            type="number"
+                                            min="1"
+                                            placeholder="Add timer"`
+                                            />
+                                        </form>
+                                    
+                                        <!-- for the other options include buttons with arbitrary values
+                                            data-time is included to represent the number of seconds
+                                            -->
+                                        <button data-time="20">20 seconds</button>
+                                        <button data-time="300">5 minutes</button>
+                                        <button data-time="900">15 minutes</button>
+                                        <button data-time="1800">30 minutes</button>
+                                        <button data-time="3600">1 hour</button>
+                                        <button data-time="5400">1 hour <sup>1</sup>/<sub>2</sub></button>
+                                        
+                                    </div>
+                                </main>
+
+
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+    </body>
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+    <script type="text/javascript">
+
+        // intervalID to ensure only one interval runs at a tim
+        let intervalID = 0;
+
+        // function zero-padding the integer passed as argument
+        const zeroPad = num => (num < 10 ? `0${num}` : num);
+
+
+        // function showing the countdown in the selected element
+        // accepting a number of seconds and displaying the number of minutes and seconds
+        function showTimer(seconds) {
+        // target the container in which to show the countdown and apply a class to slightly update the visual
+        const appTimer = document.querySelector('.app__timer');
+        appTimer.classList.add('active');
+
+        // compute the number of minutes and of seconds
+        const minutes = Math.floor(seconds / 60);
+        // using the modulo operator to consider the remainder past the 60s marker
+        const remainingSeconds = seconds % 60;
+
+        // add the information in the main heading
+        appTimer.querySelector('h1').textContent = `${zeroPad(minutes)}:${zeroPad(remainingSeconds)}`;
+        }
+
+
+        // function creating the timer
+        // accepting as argument a number of seconds, setting up an interval to update the UI every second as to show the passage of time
+        function timer(seconds) {
+            // immediately clear any, if existing, intervals
+            clearInterval(intervalID);
+
+            // create two dates instances, one for the moment in which the timer begins, one for the moment in which it should end
+            const now = Date.now();
+            const then = new Date(now + seconds * 1000);
+
+            // compute the number of seconds between the two SVGElementInstanceList, and immediately call the function to highlight the amount of time
+            const totalSeconds = Math.round((then - now) / 1000);
+            // immediately show the timer for the number of seconds
+            showTimer(totalSeconds);
+
+            // change the text of the sub-heading to show the time at which the timer will end
+            const appTimer = document.querySelector('.app__timer');
+            // based on the number of hours and minutes of the `then` instance
+            // appTimer.querySelector('h3').textContent = `Back @ ${then.getHours()}:${zeroPad(then.getMinutes())}`;
+
+            // set up the interval
+            intervalID = setInterval(() => {
+                // compute the number of seconds between the current instance and the instance represented by `then`
+                const missingSeconds = Math.round((then - Date.now()) / 1000);
+                showTimer(missingSeconds);
+
+                // when reaching 0 clear the interval and remove the arbitrary class
+                if (missingSeconds <= 0) {
+                appTimer.classList.remove('active');
+                clearInterval(intervalID);
+                }
+            }, 1000);
+        }
+
+
+        // target the buttons which allow to run a timer for a prescribed amount of time
+        const buttons = document.querySelectorAll('button');
+
+        // function called in response to a click event on one of the buttons
+        function handleClick() {
+            // retrieve the number of seconds described in the data.time attribute
+            // ! use the parse function to store a reference to the value as an integer
+            const seconds = parseInt(this.getAttribute('data-time'), 10);
+            // start the timer for the selected number of seconds
+            timer(seconds);
+        }
+        // attach an event listener on each button for a click event
+        buttons.forEach(button => button.addEventListener('click', handleClick));
+
+
+        // target the form detailing an integer for a selected number of minutes
+        // ! it is possible to call an element by name through `document.name`
+        const form = document.customTimer;
+
+        // function called in response to the submit event being fired on the form
+        function handleSubmit(e) {
+            // prevent the default behavior
+            e.preventDefault();
+
+            // retrieve the value detailed in the input element
+            /* minutes is the name of the input element, which means that
+                this.minutes.value
+                targets the same element as
+                this.querySelector('input[name="minutes"])
+            */
+            const minutes = parseInt(this.minutes.value, 10);
+            // start the timer for the selected number of minutes
+            timer(minutes * 60);
+
+            // clear the form of any value
+            this.reset();
+        }
+
+        // listen for the submit event on the entire form
+        form.addEventListener('submit', handleSubmit);
+
+
+    </script>
+
+</html>
