@@ -10,7 +10,7 @@
       "time": 176.144
     },
     "Timer": {
-      "time": 111.425
+      "time": 179.01899999999998
     }
   },
   "Microsoft Teams": {
@@ -44,7 +44,7 @@
       "time": 2.012
     },
     "main.js - loop-timer - Visual Studio Code": {
-      "time": 150.493
+      "time": 210.81900000000002
     },
     "index.html - loop-timer - Visual Studio Code": {
       "time": 355.42699999999996
@@ -59,7 +59,10 @@
       "time": 2.016
     },
     "● main.js - loop-timer - Visual Studio Code": {
-      "time": 14.058
+      "time": 18.092
+    },
+    "Visual Studio Code": {
+      "time": 2.012
     }
   },
   "Google Chrome": {
@@ -178,7 +181,7 @@
       "time": 6.010999999999999
     },
     "Laravel - Google Chrome": {
-      "time": 96.357
+      "time": 100.4
     },
     "DevTools - test.test/": {
       "time": 38.177

@@ -83,7 +83,7 @@ const createWindow = () => {
   })
   
     // open dev tools
-    // win.webContents.openDevTools()
+    win.webContents.openDevTools()
 
 
     // Check if userData is not null, and decide which page to load.
@@ -460,6 +460,7 @@ function showNotification(title, body,fix) {
 
   notification.show();
 }
+
 
 
 function LoginNotification(title, body, fix) {
