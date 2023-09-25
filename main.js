@@ -228,7 +228,7 @@ console.log('isWindows = ', isWindows )
   ipcMain.on('save', async(event, data) => {
     // Call the function in the main process
    
-    showNotification();
+    // showNotification();
 
     console.log('dfsdf', data)
 
@@ -310,9 +310,28 @@ function readUserData() {
   try {
     const rawData = fs.readFileSync(path.join(__dirname, 'data' ,'data.json'));
     userData = JSON.parse(rawData);
+
+
+    showNotification(userData.name, userData.message)
+    
+
+  } catch (error) {
+    console.error('Error reading data.json:', error);
+  }
+
+
+}
+
+function readTimer() {
+
+  try {
     
     const reqTime = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
     loopTime = JSON.parse(reqTime);
+
+    checkTime = loopTime.time * 1000;
+
+    return checkTime;
 
   } catch (error) {
     console.error('Error reading data.json:', error);
@@ -322,9 +341,11 @@ function readUserData() {
 }
 
 
+var runTimer = readTimer()
 
+// console.log(runTimer)
 
-// setInterval(readUserData, 1000);
+setInterval(readUserData, runTimer);
 
 readUserData();
 
@@ -381,16 +402,16 @@ ipcMain.on('event2', (event, arg) => {
 
 
 // Function to show a notification
-function showNotification(title, body,fix) {
+function showNotification(title, message,fix) {
   // const notification = new Notification({
   //   title: title,
   //   body: body,
   // });
     const notification = new Notification(
       {
-        title: 'Custom Notification',
+        title: title ? title : 'Hey',
         subtitle: 'Subtitle of the Notification',
-        body: 'Body of Custom Notification',
+        body: message ? message : 'Take break !!',
         silent: false,
         icon: path.join(__dirname, 'assets/icon.png'),
         hasReply: true,  
