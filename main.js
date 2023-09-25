@@ -240,6 +240,22 @@ console.log('isWindows = ', isWindows )
     app.exit(0)
 
   });
+  
+  ipcMain.on('saveTime', async(event, data) => {
+    // Call the function in the main process
+   
+    // showNotification();
+
+    console.log('saveTime', data)
+
+    // saveTimeToFile(660);
+    // saveDataToFile(data);
+
+    //  createWindow();
+    // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    // app.exit(0)
+
+  });
 
 
   // Save time data to JSON file
@@ -274,21 +290,6 @@ async function saveTimeToFile(time) {
 
 })
 
-
-function processScreenData(stream) {
-  // You can use the stream data to analyze mouse and keyboard activity
-  // For example, you can use robotjs to check for mouse and keyboard events
-
-  // For demonstration purposes, we'll log a message when the stream is active
-  stream.oninactive = () => {
-    console.log('Screen stream stopped. Activity tracking terminated.');
-  };
-}
-
-ipcMain.on('login', async (event) => {
-  console.log('login herer');
-  event.sender.send('login-success', { success: false, error: 'Failed to save screenshot' });
-})
 
 
 // Read the data from data.json
@@ -329,6 +330,8 @@ function readTimer() {
     const reqTime = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
     loopTime = JSON.parse(reqTime);
 
+    // console.log(loopTime.time)
+
     checkTime = loopTime.time * 1000;
 
     return checkTime;
@@ -345,7 +348,12 @@ var runTimer = readTimer()
 
 // console.log(runTimer)
 
-setInterval(readUserData, runTimer);
+if(runTimer > 1000){
+
+  setInterval(readUserData, runTimer);
+
+}
+
 
 readUserData();
 
@@ -425,126 +433,6 @@ function showNotification(title, message,fix) {
 }
 
 
-  ipcMain.on('capture-screenshot', async (event) => {
-    // console.log('login herer capture-screenshot');
-  const displays = screen.getAllDisplays();
-  const screenshots = await Promise.all(
-    displays.map(async (display) => {
-      // const screenshot = await captureScreen(display.id);
-      console.log('display = ', display);
-
-      const primaryDisplay = display;
-      // const primaryDisplay = screen.getPrimaryDisplay();
-
-      // Get its size
-      const { width, height } = primaryDisplay.size;
-
-      // Set up the options for the desktopCapturer
-      const options = {
-        types: ['screen'],
-        thumbnailSize: { width, height },
-      };
-
-      // Get the sources
-      const sources = await desktopCapturer.getSources(options);
-      
-      // Find the primary display's source
-      const primarySource = sources.find(({display_id}) => display_id == primaryDisplay.id)
-      
-      // Get the image
-      const image = primarySource.thumbnail;
-      
-      const dataURL = image.toDataURL();
-
-      // Generate a unique filename for the image
-      const filename = `screenshot_${Date.now()}.png`;
-
-      // Create the "images" folder if it doesn't exist
-      // const imagesFolderPath = path.join(app.getPath('downloads'), 'images');
-      const imagesFolderPath = path.join(__dirname, 'images');
-      if (!fs.existsSync(imagesFolderPath)) {
-        fs.mkdirSync(imagesFolderPath);
-      }
-
-      // Save the image file to the "images" folder
-      const filePath = path.join(imagesFolderPath, filename);
-
-      fs.writeFile(filePath, image.toPNG(), (error) => {
-        if (error) {
-          console.error('Error saving the screenshot:', error);
-          // event.sender.send('screenshot-captured', { success: false, error: 'Failed to save screenshot' });
-        } else {
-          console.log('Screenshot saved:', filePath);
-          const uploadUrl = 'https://app.idevelopment.site/api/save_screenshort';
-          // const uploadUrl = 'http://erp.test/api/save_screenshort';
-          uploadImage(filePath, uploadUrl);
-
-          console.log('logged user :', userData);
-          // event.sender.send('screenshot-captured', { success: true, filePath: filePath });
-
-        }
-      });
-
-
-
-      // return true;
-    })
-  );
-
-});
-
-
-
-// Function to clear the data.json file
-async function clearDataFile(filePath) {
-  // Create an empty JSON object
-  const emptyData = {};
-
-  // Convert the empty object to JSON format
-  const emptyJsonData = JSON.stringify(emptyData);
-
-  // Write the empty JSON data to the file
-  fs.writeFile(filePath, emptyJsonData, (err) => {
-    if (err) {
-      console.error('Error clearing JSON file:', err);
-    } else {
-      console.log('Data.json file cleared successfully.');
-      closeAllWindows();
-      if (process.platform === 'darwin') {
-        app.quit();
-      }
-      
-      // createWindow();
-    }
-  });
-}
-
-
-
-// Function to upload an json using Axios
-async function updateNotification(minutes, uploadUrl) {
-  try {
-
-    const formData = new FormData();
-    formData.append('idleTime', minutes);
-    formData.append('id', userData.apiResponse.user.id);
-
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-
-    const response = await axios.post(uploadUrl, formData, {
-      headers: headers,
-    });
-
-    console.log('Inactive notification:', response.data);
-
-  } catch (error) {
-    console.error('Error while sending inactive notification:', error.message);
-  }
-}
-
-
 // Function to close all windows
 function closeAllWindows() {
   const windows = BrowserWindow.getAllWindows();
@@ -568,36 +456,4 @@ app.on('activate', () => {
 if (process.platform === 'win32')
 {
     app.setAppUserModelId('Loop Reminder')
-}
-
-
-
-// helper functions
-
-
-const mainexe = path.join(__dirname, 'main.exe');
-// function
-function getIdleDurationFromExe() {
-  return new Promise((resolve, reject) => {
-    const childProcess = spawn(mainexe);
-
-    let output = '';
-
-    childProcess.stdout.on('data', (data) => {
-      output += data.toString();
-    });
-
-    childProcess.stderr.on('data', (data) => {
-      console.error(`Error: ${data}`);
-      reject(new Error(data.toString()));
-    });
-
-    childProcess.on('close', (code) => {
-      if (code === 0) {
-        resolve(parseFloat(output));
-      } else {
-        reject(new Error(`Error: Non-zero exit code ${code}`));
-      }
-    });
-  });
 }

@@ -84,6 +84,23 @@ document.addEventListener('DOMContentLoaded', () => {
       
     })
   }
+  
+  const saveTime = document.getElementById('saveTime');
+  if(saveTime){
+
+    saveTime.addEventListener('click', (event) => {
+      event.preventDefault();
+
+      const classTime = document.getElementsByClassName('saveTime').value;
+
+
+      console.log('saveTime clicked');
+
+      // remove all data from data.json file
+      ipcRenderer.send('saveTime', { classTime });
+      
+    })
+  }
 
 });
 
