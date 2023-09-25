@@ -1,18 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
-
+  
   // Only run this code if the user is on the dashboard page
-  if (window.location.href.includes('dashboard.html')) {
+  if (window.location.href.includes('index.html')) {
 
-    ipcRenderer.on('show-dashboard', (event, userData) => {
-      console.log('ddddd kkjkjkdjfjdf ', userData, event)
+    ipcRenderer.on('sendSettings', (event, userData) => {
+
+      console.log('sendSettings ', userData, event)
       // console.log(userData.apiResponse); // Check the content of userData.apiResponse
-      const firstNameElement = document.getElementById('first-name');
-      const lastNameElement = document.getElementById('last-name');
+      const firstNameElement = document.getElementById('name');
+      const message = document.getElementById('message');
 
       // Assuming userData.apiResponse.user contains the user's information
-      firstNameElement.innerText = `First Name`;
+      firstNameElement.value = event.name;
+      message.value = event.message;
       // firstNameElement.innerText = `First Name: ${userData.apiResponse.user.first_name}`;
-      lastNameElement.innerText = `Last Name: ${userData.apiResponse.user.last_name}`;
+      // lastNameElement.innerText = `Last Name: ${userData.apiResponse.user.last_name}`;
     });
 
 

@@ -1,9 +1,7 @@
-const { app, BrowserWindow, desktopCapturer, screen, ipcMain, Menu, Tray , powerMonitor , Notification, globalShortcut, shell , autoUpdater  } = require('electron')
+const { app, BrowserWindow, desktopCapturer, screen, ipcMain, Menu, Tray , powerMonitor , Notification, shell , autoUpdater  } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const axios = require('axios');
-const { Readable } = require('stream');
-const { Blob } = require('buffer');
 const { log } = require('console');
 const { spawn } = require('child_process');
 const common = require('./functions/common')
@@ -65,13 +63,13 @@ const createWindow = () => {
 
 
     // Check if userData is not null, and decide which page to load.
-    if (userData.apiResponse) {
-      win.webContents.send('show-dashboard', userData); // Pass userData to dashboard.html
-      win.loadFile(path.join(__dirname, 'dashboard.html'))
-      .then(() => { win.webContents.send('sendSettings', userData.apiResponse); })
+    if (userData) {
+      console.log('userData exitingngngng', userData)
+      win.loadFile(path.join(__dirname, 'index.html'))
+      .then(() => { win.webContents.send('sendSettings', userData); })
         .then(() => { win.show(); });
 
-      return win;
+      // return win;
       console.log('show-dashboard = ', userData);
       // win.webContents.send('show-dashboard', loginData);
     } else {
@@ -229,14 +227,17 @@ console.log('isWindows = ', isWindows )
   
   ipcMain.on('save', async(event, data) => {
     // Call the function in the main process
-    // const filePath = path.join(__dirname, 'data.json');
-    // await clearDataFile(filePath);
-    // createWindow();
+   
+    showNotification();
 
     console.log('dfsdf', data)
 
     // saveTimeToFile(660);
     saveDataToFile(data);
+
+     createWindow();
+    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    app.exit(0)
 
   });
 
@@ -257,30 +258,19 @@ async function saveTimeToFile(time) {
 }
 
   // Save data to JSON file
-async function saveDataToFile(reqdata) {
-  console.log('Save data to file')
+  async function saveDataToFile(reqdata) {
+    console.log('Save data to file')
 
-  const filePath = path.join('data', 'data.json');
-  const data = JSON.stringify({ name : reqdata.name, message : reqdata.message });
+    const filePath = path.join('data', 'data.json');
+    const data = JSON.stringify({ name : reqdata.name, message : reqdata.message });
 
-  try {
-    await fs.promises.writeFile(filePath, data, 'utf-8');
-    console.log('Data saved to file:', reqdata.name);
-  } catch (error) {
-    console.error('Error saving time:', error);
+    try {
+      await fs.promises.writeFile(filePath, data, 'utf-8');
+      console.log('Data saved to file:', reqdata.name);
+    } catch (error) {
+      console.error('Error saving time:', error);
+    }
   }
-}
-
-
-  // Register multiple global hotkeys using a loop
-  // for (const acc of accelerators) {
-  //   globalShortcut.register(acc, () => {
-  //     console.log(`Keyboard activity detected for accelerator: ${acc}`);
-  //   });
-  // }
- 
-// Start capturing screen data for mouse and keyboard tracking
-// startActivityTracking();
 
 })
 
@@ -317,96 +307,24 @@ function stopAllScreenshotProcesses() {
 
 function readUserData() {
 
-  
-
   try {
-    const rawData = fs.readFileSync(path.join(__dirname, 'data.json'));
+    const rawData = fs.readFileSync(path.join(__dirname, 'data' ,'data.json'));
     userData = JSON.parse(rawData);
-
-    // Access the 'user' property using optional chaining
-    const user = userData?.apiResponse?.user;
-
-    if( typeof user === 'undefined'){
-      console.log(' use is null')
-    }else{
-      console.log(' use exit ', user)
-
-      const delay = 15 * 60 * 1000; // 15 minutes
-
-      // const delay =  5000; // 5 seconds
-      const intervalId = setInterval(() =>{
-        console.log('callscreenshort started  delay....', delay);
-        // ipcMain.emit('capture-screenshot', 'Hello from event1 handler');
-      }, delay);
-
-      // const delay =  2000; // 2 seconds
-      const timeLineInterval = setInterval(async () => {
-        const new_chartData = await activityTracker.getChartData();
-        var data = JSON.stringify(new_chartData);
-        // const timelineApiurl = 'http://erp.test/api/timieline_store';
-        const timelineApiurl = 'https://app.idevelopment.site/api/timieline_store';
-
-        console.log('============================');
-        
-        //  console.log('data', data)
-        
-        const timer = await timerFunc.checkAndClearFiles()
-        uploadTimeline(data, timelineApiurl, timer)
-        //  console.log(JSON.stringify(new_chartData, null, 2));
-        // win.webContents.send('idleTime', 'Inactive')
-        win.webContents.send('timer', timer)
-        console.log('============================', timer);
-
-        chartData = new_chartData;
-        screenshotIntervals.push(timeLineInterval)
-
-       
-        // running timer
-        const respnose = common.checkAndClearFiles();
-
-        // read time from timer.json file
-        timer =  await common.loadTimeFromFile()
-
-        uploadTimeline(data, timelineApiurl, timer);
-
-
-        win.webContents.send('timer', respnose)
-
-      }, 60000);
-
-      screenshotIntervals.push(intervalId)
-        
-
-      // activity track
-      // const pythonTime = 900000;
-      const pythonTime = 300000;
-      // setInterval(runPythonScriptGetIdleDuration, pythonTime);
-      setInterval(getIdleTime, pythonTime);
-
-    }
-
-    // if(rawData.apiResponse.user.length > 0){
-      
-    //   console.log('userData: ' + rawData)
-    // }else{
-      
-    //   console.log('userData: empty data.json file')
-    // }
-
-
-    // const delay = 15 * 60 * 1000; // 15 minutes
     
-
-
-    
-
-
-
+    const reqTime = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
+    loopTime = JSON.parse(reqTime);
 
   } catch (error) {
     console.error('Error reading data.json:', error);
   }
+
+
 }
+
+
+
+
+// setInterval(readUserData, 1000);
 
 readUserData();
 
@@ -468,44 +386,22 @@ function showNotification(title, body,fix) {
   //   title: title,
   //   body: body,
   // });
-  const notification = new Notification(
-    {
-      title: 'Custom Notification',
-      subtitle: 'Subtitle of the Notification',
-      body: 'Body of Custom Notification',
-      silent: false,
-      icon: path.join(__dirname, 'assets/icon.png'),
-      hasReply: true,  
-      // timeoutType: fix ? 'never' : true , 
-      replyPlaceholder: 'Reply Here',
-      urgency: 'critical' 
-    }
-  );
+    const notification = new Notification(
+      {
+        title: 'Custom Notification',
+        subtitle: 'Subtitle of the Notification',
+        body: 'Body of Custom Notification',
+        silent: false,
+        icon: path.join(__dirname, 'assets/icon.png'),
+        hasReply: true,  
+        // timeoutType: fix ? 'never' : true , 
+        replyPlaceholder: 'Reply Here',
+        urgency: 'critical' 
+      }
+    );
 
-  notification.show();
+    notification.show();
 }
-
-
-
-function LoginNotification(title, body, fix) {
-  
-  const notification = new Notification(
-    {
-      title: title,
-      subtitle: 'Subtitle of the Notification',
-      body: body,
-      silent: false,
-      icon: path.join(__dirname, 'assets/icon.png'),
-      hasReply: true,  
-      timeoutType: fix ? 'never' : true ,
-      replyPlaceholder: 'Reply Here',
-      urgency: 'critical' 
-    }
-  );
-
-  notification.show();
-}
-
 
 
   ipcMain.on('capture-screenshot', async (event) => {
@@ -576,31 +472,6 @@ function LoginNotification(title, body, fix) {
 
 });
 
-
-// Function to convert a Buffer to a Blob
-function bufferToBlob(buffer) {
-  const readable = new Readable();
-  readable._read = () => {};
-  readable.push(buffer);
-  readable.push(null);
-
-  return new Blob([readable.read()]);
-}
-
-
-function deleteImage(filePath)
-{
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      console.error('Error deleting image file:', err);
-      // res.status(500).send('Error deleting image file');
-    } else {
-      console.log('Image file deleted successfully.');
-      // res.send('Image file deleted');
-    }
-  });
-
-}
 
 
 // Function to clear the data.json file
@@ -675,61 +546,9 @@ app.on('activate', () => {
 
 if (process.platform === 'win32')
 {
-    app.setAppUserModelId('Rvs DeskTime')
+    app.setAppUserModelId('Loop Reminder')
 }
 
-
-function startPythonScript(){
-  const pythonProcess = spawn('python', [path.join(__dirname, 'activity.py')] )
-
-  pythonProcess.stdout.on('data', (data) =>{
-    console.log('stdout = ', data.toString());
-  })
-
-  pythonProcess.stderr.on('data', (data) =>{
-    console.error('stderr = ',data.toString());
-  })
-
-  // Handle the Python script exit event
-  pythonProcess.on('exit', (code) => {
-    console.log(`Python script exited with code ${code}`);
-  });
-
-  // Handle errors related to the Python script process
-  pythonProcess.on('error', (err) => {
-    console.error('Error occurred in Python process:', err);
-  });
-
-}
-
-
-
-// run python file
-
-function getIdleDurationFromPython(){
-  return new Promise((resolve, reject) => {
-    const pythonProcess = spawn('python', [path.join(__dirname, 'activity.py')] )
-
-    let result = '';
-     pythonProcess.stdout.on('data', (data) => {
-      result += data.toString();
-     })
-
-     pythonProcess.stderr.on('data', (data) => {
-      reject(data.toString());
-     });
-
-     pythonProcess.on('close', (code) => {
-      if(code === 0){
-        resolve(parseFloat(result));
-      }else{
-        reject(`Python script exited with non-zero code ${code}`);
-      }
-     })
-
-
-  })
-}
 
 
 // helper functions
@@ -761,27 +580,3 @@ function getIdleDurationFromExe() {
     });
   });
 }
-
-
-async function getIdleTime(){
-  getIdleDurationFromExe()
-  .then((idleDuration) => {
-
-    let minutes = (idleDuration / 60).toFixed(2);
-    console.log('Idle Duration (seconds):', idleDuration);
-    win.webContents.send('idleTime', idleDuration)
-    if(minutes > 5){
-      // win.webContents.send('idleTime', 'Inactive')
-      let notificationUrl = 'https://app.idevelopment.site/api/notification_inactive';
-      // let notificationUrl = 'http://erp.test/api/notification_inactive';
-      updateNotification(minutes, notificationUrl)
-      LoginNotification('Inactive', 'Since 5 mint ago!', true)
-    }
-    // console.log(idleDuration);
-  })
-  .catch((error) => {
-    console.error('Error:', error.message);
-  });
-}
-
-
