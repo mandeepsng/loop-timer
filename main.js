@@ -73,7 +73,7 @@ Menu.setApplicationMenu(menu)
 const createWindow = () => {
   win = new BrowserWindow({
     width: 1000,
-    height: 720,
+    height: 790,
     resizable: false,
     skipTaskbar: true,
     webPreferences: {
@@ -245,8 +245,8 @@ console.log('isWindows = ', isWindows )
     const filePath = path.join(__dirname, 'data.json');
     await clearDataFile(filePath);
     // createWindow();
-    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-    app.exit(0)
+    // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    // app.exit(0)
   });
 
 
@@ -387,6 +387,8 @@ function readUserData() {
 }
 
 readUserData();
+
+
 
 
 ipcMain.on('event2', (event, arg) => {

@@ -66,14 +66,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const logout = document.getElementById('logout');
+  const logout = document.getElementById('save');
   if(logout){
       logout.addEventListener('click', (event) => {
       event.preventDefault();
-      console.log('logout clicked');
+      console.log('save clicked');
 
       // remove all data from data.json file
-      ipcRenderer.send('logout');
+      // ipcRenderer.send('logout');
       
     })
   }
