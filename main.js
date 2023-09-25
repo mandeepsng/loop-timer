@@ -6,29 +6,10 @@ const { Readable } = require('stream');
 const { Blob } = require('buffer');
 const { log } = require('console');
 const { spawn } = require('child_process');
-const { loadPyodide } = require('pyodide')
 const common = require('./functions/common')
-
-const trackingPath = path.join(__dirname, 'data', 'tracking.json');
-const functionPath = path.join(__dirname, 'functions', 'timer');
-
-const timerFunc = require(functionPath)
-const ActivityTracker = require("./ActivityTracker");
-
-const activityTracker = new ActivityTracker( trackingPath, 2000);
-
-activityTracker.init();
 
 const isWindows = process.platform === 'win32';
 
-
-// Settings object
-let setting = {
-  'renderer': {
-      'key1': 'value1',
-      'key2': 'value2'
-  }
-}
 
 let win;
 let tray = null
@@ -36,9 +17,6 @@ let tray = null
 let userInactiveTimeout;
 let inactiveTimer;
 let screenshotIntervals = []
-let activityTimer;
-let chartData;
-let timer;
 
 const filePath = path.join(__dirname,'dist', 'rvsdesktime Setup 1.2.4.exe');
 const exePath = path.join(__dirname, 'update.json');
@@ -72,7 +50,7 @@ Menu.setApplicationMenu(menu)
 
 const createWindow = () => {
   win = new BrowserWindow({
-    width: 1000,
+    width: 1800,
     height: 790,
     resizable: false,
     skipTaskbar: true,
@@ -242,12 +220,56 @@ console.log('isWindows = ', isWindows )
   // Listen for the message from the renderer process
   ipcMain.on('logout', async() => {
     // Call the function in the main process
-    const filePath = path.join(__dirname, 'data.json');
-    await clearDataFile(filePath);
+    // const filePath = path.join(__dirname, 'data.json');
+    // await clearDataFile(filePath);
     // createWindow();
     // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
     // app.exit(0)
   });
+  
+  ipcMain.on('save', async(event, data) => {
+    // Call the function in the main process
+    // const filePath = path.join(__dirname, 'data.json');
+    // await clearDataFile(filePath);
+    // createWindow();
+
+    console.log('dfsdf', data)
+
+    // saveTimeToFile(660);
+    saveDataToFile(data);
+
+  });
+
+
+  // Save time data to JSON file
+async function saveTimeToFile(time) {
+  console.log('Saving time')
+
+  const filePath = path.join('data', 'time.json');
+  const data = JSON.stringify({ time : time });
+
+  try {
+    await fs.promises.writeFile(filePath, data, 'utf-8');
+    console.log('Time saved to file:', time);
+  } catch (error) {
+    console.error('Error saving time:', error);
+  }
+}
+
+  // Save data to JSON file
+async function saveDataToFile(reqdata) {
+  console.log('Save data to file')
+
+  const filePath = path.join('data', 'data.json');
+  const data = JSON.stringify({ name : reqdata.name, message : reqdata.message });
+
+  try {
+    await fs.promises.writeFile(filePath, data, 'utf-8');
+    console.log('Data saved to file:', reqdata.name);
+  } catch (error) {
+    console.error('Error saving time:', error);
+  }
+}
 
 
   // Register multiple global hotkeys using a loop

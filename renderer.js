@@ -68,12 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const logout = document.getElementById('save');
   if(logout){
+
       logout.addEventListener('click', (event) => {
       event.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const message = document.getElementById('message').value;
+
       console.log('save clicked');
 
       // remove all data from data.json file
-      // ipcRenderer.send('logout');
+      ipcRenderer.send('save', { name, message });
       
     })
   }
