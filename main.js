@@ -1,9 +1,8 @@
-const { app, BrowserWindow, desktopCapturer, screen, ipcMain, Menu, Tray , powerMonitor , Notification, shell , autoUpdater  } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray , powerMonitor , Notification, shell , autoUpdater  } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const axios = require('axios');
 const { log } = require('console');
-const { spawn } = require('child_process');
 const common = require('./functions/common')
 
 const isWindows = process.platform === 'win32';
@@ -248,13 +247,31 @@ console.log('isWindows = ', isWindows )
 
     console.log('saveTime', data)
 
-    // saveTimeToFile(660);
+    saveTimeToFile(data.classTime);
+    // saveDataToFile(data);
+
+    win.reload()
+
+    
+
+    //  createWindow();
+    // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    // app.exit(0)
+  });
+  
+  ipcMain.on('notfication', async(event, data) => {
+    // Call the function in the main process
+   
+    // showNotification();
+
+    console.log('saveTime', data)
+
+    saveTimeToFile(data.classTime);
     // saveDataToFile(data);
 
     //  createWindow();
     // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
     // app.exit(0)
-
   });
 
 
@@ -325,6 +342,8 @@ function readUserData() {
 
 function readTimer() {
 
+  stopAllScreenshotProcesses()
+
   try {
     
     const reqTime = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
@@ -333,6 +352,8 @@ function readTimer() {
     // console.log(loopTime.time)
 
     checkTime = loopTime.time * 1000;
+
+    screenshotIntervals.push(checkTime)
 
     return checkTime;
 

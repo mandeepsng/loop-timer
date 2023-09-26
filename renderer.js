@@ -85,24 +85,31 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
   
-  const saveTime = document.getElementById('saveTime');
-  if(saveTime){
+  const saveTimes = document.getElementsByClassName('saveTime');
+
+  console.log(saveTimes)
+  if(saveTimes.length > 0){
+
+    for ( const saveTime of saveTimes){
+
 
     saveTime.addEventListener('click', (event) => {
       event.preventDefault();
 
-      const classTime = document.getElementsByClassName('saveTime').value;
+      const classTime = saveTime.getAttribute('data-time');
 
 
-      console.log('saveTime clicked');
+      console.log('saveTime clicked', classTime);
 
       // remove all data from data.json file
       ipcRenderer.send('saveTime', { classTime });
       
     })
+    }
   }
 
 });
+
 
 
 async function takeScreenshot() {
