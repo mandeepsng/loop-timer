@@ -343,6 +343,7 @@
 
         // intervalID to ensure only one interval runs at a tim
         let intervalID = 0;
+        let intervalIds = [];
 
         // function zero-padding the integer passed as argument
         const zeroPad = num => (num < 10 ? `0${num}` : num);
@@ -408,12 +409,23 @@
                     console.log(`missingSeconds = ${missingSeconds}`)
                     
                     clearInterval(intervalID);
+
+                    if (intervalIds && intervalIds.length > 0) {
+                        console.log('Clearing existing intervals');
+                        intervalIds.forEach((intervalId) => {
+                            clearInterval(intervalId);
+                        });
+                        intervalIds = []; // Clear the array
+                    }
                     
                     console.log(`totalSeconds = ${totalSeconds}`)
                     timer(seconds)
 
                 }
             }, 1000);
+
+
+            intervalIds.push(intervalID);
         }
 
 
