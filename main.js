@@ -248,7 +248,7 @@ console.log('isWindows = ', isWindows )
 
     console.log('saveTime', data)
 
-    // saveTimeToFile(660);
+    saveTimeToFile(data.dataTime);
     // saveDataToFile(data);
 
     //  createWindow();

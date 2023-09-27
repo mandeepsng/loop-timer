@@ -85,21 +85,29 @@ document.addEventListener('DOMContentLoaded', () => {
     })
   }
   
-  const saveTime = document.getElementById('saveTime');
-  if(saveTime){
-
-    saveTime.addEventListener('click', (event) => {
-      event.preventDefault();
-
-      const classTime = document.getElementsByClassName('saveTime').value;
+  const saveTimes = document.getElementsByClassName('saveTime');
+  if(saveTimes.length > 0){
 
 
-      console.log('saveTime clicked');
+    for (const saveTime of saveTimes){
 
-      // remove all data from data.json file
-      ipcRenderer.send('saveTime', { classTime });
       
-    })
+      saveTime.addEventListener('click', (event) => {
+        event.preventDefault();
+        
+        const dataTime = saveTime.getAttribute('data-time');
+        
+        
+        console.log('saveTime clicked');
+        
+        // remove all data from data.json file
+        ipcRenderer.send('saveTime', { dataTime });
+        
+      })
+      
+    }
+
+
   }
 
 });
