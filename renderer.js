@@ -86,12 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   const saveTimes = document.getElementsByClassName('saveTime');
+
   if(saveTimes.length > 0){
 
 
     for (const saveTime of saveTimes){
 
+
       
+
       saveTime.addEventListener('click', (event) => {
         event.preventDefault();
         
@@ -111,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+
 
 
 async function takeScreenshot() {

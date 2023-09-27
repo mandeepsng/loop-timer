@@ -391,7 +391,9 @@
                 // when reaching 0 clear the interval and remove the arbitrary class
                 if (missingSeconds <= 0) {
                 appTimer.classList.remove('active');
+                console.log(`missingSeconds = ${missingSeconds}`)
                 clearInterval(intervalID);
+
                 }
             }, 1000);
         }
@@ -407,6 +409,13 @@
             const seconds = parseInt(this.getAttribute('data-time'), 10);
             // start the timer for the selected number of seconds
             timer(seconds);
+
+            var classTime = seconds;
+
+            console.log('sdfsdfsdffsd')
+
+           // ipcRenderer.send('notification', { classTime });
+
         }
         // attach an event listener on each button for a click event
         buttons.forEach(button => button.addEventListener('click', handleClick));
@@ -421,6 +430,7 @@
             // prevent the default behavior
             e.preventDefault();
 
+           //  ipcRenderer.send('saveTime', { classTime });
             // retrieve the value detailed in the input element
             /* minutes is the name of the input element, which means that
                 this.minutes.value
