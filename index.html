@@ -310,7 +310,10 @@
                                         <!-- for the other options include buttons with arbitrary values
                                             data-time is included to represent the number of seconds
                                             -->
+                                        <button class="saveTime" data-time="10">10 seconds</button>
                                         <button class="saveTime" data-time="20">20 seconds</button>
+                                        <button class="saveTime" data-time="30">30 seconds</button>
+                                        <button class="saveTime" data-time="60">1 minutes</button>
                                         <button class="saveTime" data-time="300">5 minutes</button>
                                         <button class="saveTime" data-time="900">15 minutes</button>
                                         <button class="saveTime" data-time="1800">30 minutes</button>
@@ -377,6 +380,9 @@
             // immediately show the timer for the number of seconds
             showTimer(totalSeconds);
 
+            console.log(`seconds = ${seconds}`)
+
+
             // change the text of the sub-heading to show the time at which the timer will end
             const appTimer = document.querySelector('.app__timer');
             // based on the number of hours and minutes of the `then` instance
@@ -385,18 +391,33 @@
             // set up the interval
             intervalID = setInterval(() => {
                 // compute the number of seconds between the current instance and the instance represented by `then`
-                const missingSeconds = Math.round((then - Date.now()) / 1000);
-                showTimer(missingSeconds);
+                    const missingSeconds = Math.round((then - Date.now()) / 1000);
+
+                    console.log(missingSeconds + " seconds")
+                    console.log(then + " then")
+
+                    showTimer(missingSeconds);
 
                 // when reaching 0 clear the interval and remove the arbitrary class
-                if (missingSeconds <= 0) {
-                appTimer.classList.remove('active');
-                console.log(`missingSeconds = ${missingSeconds}`)
-                clearInterval(intervalID);
+                if (missingSeconds <= -1) {
+
+                    ipcRenderer.send('notification');
+
+                    appTimer.classList.remove('active');
+
+                    console.log(`missingSeconds = ${missingSeconds}`)
+                    
+                    clearInterval(intervalID);
+                    
+                    console.log(`totalSeconds = ${totalSeconds}`)
+                    timer(seconds)
 
                 }
             }, 1000);
         }
+
+
+        
 
 
         // target the buttons which allow to run a timer for a prescribed amount of time
@@ -450,6 +471,7 @@
 
 
     </script>
+
     <script src="./renderer.js"></script>
 
 </html>

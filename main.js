@@ -15,6 +15,10 @@ let userInactiveTimeout;
 let inactiveTimer;
 let screenshotIntervals = []
 
+
+// Define an array to store interval IDs.
+let intervalIds = [];
+
 const filePath = path.join(__dirname,'dist', 'rvsdesktime Setup 1.2.4.exe');
 const exePath = path.join(__dirname, 'update.json');
 
@@ -215,13 +219,10 @@ console.log('isWindows = ', isWindows )
 
 
   // Listen for the message from the renderer process
-  ipcMain.on('logout', async() => {
+  ipcMain.on('notification', async() => {
     // Call the function in the main process
-    // const filePath = path.join(__dirname, 'data.json');
-    // await clearDataFile(filePath);
-    // createWindow();
-    // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-    // app.exit(0)
+    readUserData()
+
   });
   
   ipcMain.on('save', async(event, data) => {
@@ -239,15 +240,37 @@ console.log('isWindows = ', isWindows )
     app.exit(0)
 
   });
+
+  
   
   ipcMain.on('saveTime', async(event, data) => {
     // Call the function in the main process
    
-    // showNotification();
+    if (intervalIds && intervalIds.length > 0) {
+      console.log('Clearing existing intervals');
+      intervalIds.forEach((intervalId) => {
+        clearInterval(intervalId);
+      });
+      intervalIds = []; // Clear the array
+    }
 
     console.log('saveTime', data)
 
     saveTimeToFile(data.dataTime);
+
+    // await readTimer();
+
+
+    const checkTime = data.dataTime * 1000;
+
+    // Set a new interval to call the 'readUserData' function at the specified checkTime interval.
+    const intervalId = setInterval(
+      console.log('loop enter   -=====')
+      , checkTime);
+
+    // Store the interval ID in the array for later reference.
+    intervalIds.push(intervalId);
+
 
     // saveDataToFile(data);
 
@@ -296,12 +319,13 @@ let userData = {};
 
 
 // Function to stop all screenshot processes
-function stopAllScreenshotProcesses() {
-  if (screenshotIntervals && screenshotIntervals.length > 0) {
-    screenshotIntervals.forEach((intervalId) => {
+async function stopAllScreenshotProcesses() {
+  if (intervalIds && intervalIds.length > 0) {
+    console.log('Clearing existing intervals');
+    intervalIds.forEach((intervalId) => {
       clearInterval(intervalId);
     });
-    screenshotIntervals = []; // Clear the array
+    intervalIds = []; // Clear the array
   }
 }
 
@@ -322,40 +346,46 @@ function readUserData() {
 
 }
 
-function readTimer() {
+// Updated readTimer function
+async function readTimer() {
+  console.log('readTimer');
 
-  stopAllScreenshotProcesses()
+  // Stop all existing screenshot processes and clear intervals.
+  await stopAllScreenshotProcesses();
 
   try {
-    
-    const reqTime = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
-    loopTime = JSON.parse(reqTime);
+    // Read the timer value from 'time.json' file.
+    const reqTime = fs.readFileSync(path.join(__dirname, 'data', 'time.json'));
+    const loopTime = JSON.parse(reqTime);
 
-    // console.log(loopTime.time)
+    console.log('loopTime.time', loopTime.time);
 
-    checkTime = loopTime.time * 1000;
+    // Convert the timer value to milliseconds.
+    const checkTime = loopTime.time * 1000;
 
-    screenshotIntervals.push(checkTime)
+    // Set a new interval to call the 'readUserData' function at the specified checkTime interval.
+    const intervalId = setInterval(readUserData, checkTime);
 
-    return checkTime;
+    // Store the interval ID in the array for later reference.
+    intervalIds.push(intervalId);
+
+    // You might want to return some value here if needed.
 
   } catch (error) {
     console.error('Error reading data.json:', error);
   }
-
-
 }
 
 
-var runTimer = readTimer()
+// var runTimer = readTimer()
 
 // console.log(runTimer)
 
-if(runTimer > 1000){
+// if(runTimer > 1000){
 
-  setInterval(readUserData, runTimer);
+//   setInterval(readUserData, runTimer);
 
-}
+// }
 
 
 readUserData();
