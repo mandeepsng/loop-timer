@@ -1,7 +1,7 @@
 {
-  "name": "rvsdesktime",
+  "name": "looptimer",
   "version": "1.2.7",
-  "description": "time tracking software",
+  "description": "Loop reminder",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
