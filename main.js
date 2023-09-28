@@ -19,6 +19,8 @@ let screenshotIntervals = []
 // Define an array to store interval IDs.
 let intervalIds = [];
 
+var intervalID = 0;
+
 const filePath = path.join(__dirname,'dist', 'rvsdesktime Setup 1.2.4.exe');
 const exePath = path.join(__dirname, 'update.json');
 
@@ -51,7 +53,7 @@ Menu.setApplicationMenu(menu)
 
 const createWindow = () => {
   win = new BrowserWindow({
-    width: 1800,
+    width: 750,
     height: 790,
     resizable: false,
     skipTaskbar: true,
@@ -62,7 +64,7 @@ const createWindow = () => {
   })
   
     // open dev tools
-    win.webContents.openDevTools()
+    // win.webContents.openDevTools()
 
 
     // Check if userData is not null, and decide which page to load.
@@ -88,58 +90,32 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
 
-console.log('isWindows = ', isWindows )
+  console.log('isWindows = ', isWindows )
   // window start
-
-  if (isWindows) {
-    // Check for updates when the app is ready (only on Windows)
-    // autoUpdater.setFeedURL(exePath);
-    // autoUpdater.checkForUpdates();
-
-    // autoUpdater.on('update-available', () => {
-    //   console.log('Update available. Downloading...');
-    // });
-
-    // autoUpdater.on('update-downloaded', () => {
-    //   console.log('Update downloaded. Ready to install.');
-    //   // Perform any actions you want before installing the update
-    //   // For example, you can notify the user to save their work and then quit the app.
-    //   // After the app is restarted, the new version will be launched.
-    //   autoUpdater.quitAndInstall();
-    // });
-
-    // autoUpdater.on('error', (err) => {
-    //   console.error('Error checking for updates:', err);
-    // });
-  }
-
-  // window end
-
-
 
    // Function to check for system inactivity
    function checkSystemInactivity() {
     console.log('Checking system inactivity...');
     // Perform actions for system inactivity here
-  }
-
-  // Set the event listeners for system lock and unlock
-  powerMonitor.on('lock-screen', () => {
-    console.log('System is locked.');
-    stopAllScreenshotProcesses();
-    
-    // If there was a previous inactiveTimer, clear it
-    if (inactiveTimer) {
-      clearTimeout(inactiveTimer);
     }
-  });
 
-  powerMonitor.on('unlock-screen', () => {
-    console.log('System is unlocked.');
-    readUserData();
-    // Set a new timer for 2 minutes (120,000 milliseconds)
-    inactiveTimer = setTimeout(checkSystemInactivity, 120000);
-  });
+    // Set the event listeners for system lock and unlock
+    powerMonitor.on('lock-screen', () => {
+      console.log('System is locked.');
+      stopAllScreenshotProcesses();
+      
+      // If there was a previous inactiveTimer, clear it
+      if (inactiveTimer) {
+        clearTimeout(inactiveTimer);
+      }
+    });
+
+    powerMonitor.on('unlock-screen', () => {
+      console.log('System is unlocked.');
+      readUserData();
+      // Set a new timer for 2 minutes (120,000 milliseconds)
+      inactiveTimer = setTimeout(checkSystemInactivity, 120000);
+    });
 
 
 
@@ -164,10 +140,10 @@ console.log('isWindows = ', isWindows )
       userInactiveTimeout = setTimeout(userInactive, 1 * 60 * 1000); // 3 minutes in milliseconds
     });
 
-// Set a custom user data folder path
-// const customUserDataPath = path.join(app.getPath('downloads'), 'erp');
-// app.setPath('downloads', customUserDataPath);
-// Function to perform actions when the user becomes inactive
+  // Set a custom user data folder path
+  // const customUserDataPath = path.join(app.getPath('downloads'), 'erp');
+  // app.setPath('downloads', customUserDataPath);
+  // Function to perform actions when the user becomes inactive
 
 
 
@@ -180,7 +156,6 @@ console.log('isWindows = ', isWindows )
     // win.focus()
     // shell.openExternal(`https://app.idevelopment.site/token/${userData.apiResponse.secret}`);
     createWindow()
-    // console.log('hererer  fff')
   })
 
   tray.setToolTip('Loop Reminder')
@@ -188,7 +163,6 @@ console.log('isWindows = ', isWindows )
   tray.setContextMenu(menu)
 
   createWindow()
-  // checkScreenSharingPermission();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -204,12 +178,10 @@ console.log('isWindows = ', isWindows )
     // On macOS, quit the app when all windows are closed
     // if (process.platform === 'darwin') {
       // }
-        app.quit();
+      app.quit();
   });
 
 
-  // Start the Python script
-  // startPythonScript();
 
 
 
@@ -218,83 +190,93 @@ console.log('isWindows = ', isWindows )
   // });
 
 
-  // Listen for the message from the renderer process
-  ipcMain.on('notification', async() => {
-    // Call the function in the main process
-    readUserData()
-
-  });
+  let timeArray = [];
   
   ipcMain.on('save', async(event, data) => {
     // Call the function in the main process
-   
-    // showNotification();
-
-    console.log('dfsdf', data)
-
-    // saveTimeToFile(660);
+    win.webContents.send('update-data', data);
     saveDataToFile(data);
-
-     createWindow();
-    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-    app.exit(0)
-
   });
 
   
   
   ipcMain.on('saveTime', async(event, data) => {
-    // Call the function in the main process
-   
-    if (intervalIds && intervalIds.length > 0) {
-      console.log('Clearing existing intervals');
-      intervalIds.forEach((intervalId) => {
-        clearInterval(intervalId);
-      });
-      intervalIds = []; // Clear the array
-    }
-
-    console.log('saveTime', data)
-
-    saveTimeToFile(data.dataTime);
-
-    // await readTimer();
-
-
-    const checkTime = data.dataTime * 1000;
-
-    // Set a new interval to call the 'readUserData' function at the specified checkTime interval.
-    const intervalId = setInterval(
-      console.log('loop enter   -=====')
-      , checkTime);
-
-    // Store the interval ID in the array for later reference.
-    intervalIds.push(intervalId);
-
-
-    // saveDataToFile(data);
-
-    //  createWindow();
-    // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-    // app.exit(0)
+    timer(data.dataTime)
   });
 
 
-  // Save time data to JSON file
-async function saveTimeToFile(time) {
-  console.log('Saving time')
 
-  const filePath = path.join('data', 'time.json');
-  const data = JSON.stringify({ time : time });
+  function timer(seconds) {
+    // immediately clear any, if existing, intervals
+    clearInterval(intervalID);
 
-  try {
-    await fs.promises.writeFile(filePath, data, 'utf-8');
-    console.log('Time saved to file:', time);
-  } catch (error) {
-    console.error('Error saving time:', error);
-  }
+    // create two dates instances, one for the moment in which the timer begins, one for the moment in which it should end
+    const now = Date.now();
+    const then = new Date(now + seconds * 1000);
+
+    // compute the number of seconds between the two SVGElementInstanceList, and immediately call the function to highlight the amount of time
+    const totalSeconds = Math.round((then - now) / 1000);
+    // immediately show the timer for the number of seconds
+    // showTimer(totalSeconds);
+
+    console.log(`seconds = ${seconds}`)
+
+
+    // change the text of the sub-heading to show the time at which the timer will end
+    // const appTimer = document.querySelector('.app__timer');
+    // based on the number of hours and minutes of the `then` instance
+    // appTimer.querySelector('h3').textContent = `Back @ ${then.getHours()}:${zeroPad(then.getMinutes())}`;
+
+    // set up the interval
+    intervalID = setInterval(() => {
+        // compute the number of seconds between the current instance and the instance represented by `then`
+            const missingSeconds = Math.round((then - Date.now()) / 1000);
+
+            console.log(missingSeconds + " seconds")
+            console.log(then + " then")
+
+
+            win.webContents.send('update-time', missingSeconds);
+
+            // ipcRenderer.send('saveTime', { missingSeconds : missingSeconds, totalSeconds: totalSeconds , intervalID: intervalID  } );
+            // ipcRenderer.send('saveInterval', { intervalIIId: intervalID  } );
+
+            // showTimer(missingSeconds);
+
+        // when reaching 0 clear the interval and remove the arbitrary class
+        if (missingSeconds <= 0) {
+
+            // ipcRenderer.send('notification', { loopInteval : missingSeconds   } );
+
+            readUserData()
+            // appTimer.classList.remove('active');
+
+            console.log(`missingSeconds = ${missingSeconds}`)
+            console.log(`intervalID => ${intervalID}`)
+            
+            //clearInterval(intervalID);
+
+
+            if (intervalIds && intervalIds.length > 0) {
+                console.log('Clearing existing intervals');
+                intervalIds.forEach((intervalId) => {
+                    clearInterval(intervalId);
+                });
+                intervalIds = []; // Clear the array
+            }
+            
+            console.log(`totalSeconds = ${totalSeconds}`)
+            timer(seconds)
+
+        }
+    }, 1000);
+
+
+    
 }
 
+
+  
   // Save data to JSON file
   async function saveDataToFile(reqdata) {
     console.log('Save data to file')
@@ -308,7 +290,10 @@ async function saveTimeToFile(time) {
     } catch (error) {
       console.error('Error saving time:', error);
     }
+
   }
+ 
+
 
 })
 
@@ -316,7 +301,6 @@ async function saveTimeToFile(time) {
 
 // Read the data from data.json
 let userData = {};
-
 
 // Function to stop all screenshot processes
 async function stopAllScreenshotProcesses() {
@@ -335,6 +319,11 @@ function readUserData() {
     const rawData = fs.readFileSync(path.join(__dirname, 'data' ,'data.json'));
     userData = JSON.parse(rawData);
 
+    console.log('')
+    
+    // const rawDataTimer = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
+    // userDataTimer = JSON.parse(rawDataTimer);
+
 
     showNotification(userData.name, userData.message)
     
@@ -346,99 +335,12 @@ function readUserData() {
 
 }
 
-// Updated readTimer function
-async function readTimer() {
-  console.log('readTimer');
-
-  // Stop all existing screenshot processes and clear intervals.
-  await stopAllScreenshotProcesses();
-
-  try {
-    // Read the timer value from 'time.json' file.
-    const reqTime = fs.readFileSync(path.join(__dirname, 'data', 'time.json'));
-    const loopTime = JSON.parse(reqTime);
-
-    console.log('loopTime.time', loopTime.time);
-
-    // Convert the timer value to milliseconds.
-    const checkTime = loopTime.time * 1000;
-
-    // Set a new interval to call the 'readUserData' function at the specified checkTime interval.
-    const intervalId = setInterval(readUserData, checkTime);
-
-    // Store the interval ID in the array for later reference.
-    intervalIds.push(intervalId);
-
-    // You might want to return some value here if needed.
-
-  } catch (error) {
-    console.error('Error reading data.json:', error);
-  }
-}
-
-
-// var runTimer = readTimer()
-
-// console.log(runTimer)
-
-// if(runTimer > 1000){
-
-//   setInterval(readUserData, runTimer);
-
-// }
-
 
 readUserData();
 
 
-
-
 ipcMain.on('event2', (event, arg) => {
   console.log('Received event2 with argument:', arg);
-});
-
-// ipcMain.on()
-
-
- // Listen for the message from the renderer process
- ipcMain.on('test', async() => {
-  // Call the function in the main process
-  
-  // win.minimize()
-  // filePath
-  // autoUpdater.setFeedURL(exePath); 
-  // autoUpdater.checkForUpdates(); 
-
-  // autoUpdater.on('update-available', () => {
-  //   console.log('Update available. Downloading...');
-  // });
-
-  // autoUpdater.on('update-downloaded', () => {
-  //   console.log('Update downloaded. Ready to install.');
-  //   // Perform any actions you want before installing the update
-  //   // For example, you can notify the user to save their work and then quit the app.
-  //   // After the app is restarted, the new version will be launched.
-  //   autoUpdater.quitAndInstall();
-  // });
-
-  const new_chartData_test = await activityTracker.getChartData();
-  var data = JSON.stringify(new_chartData_test);
-
-  console.log('============================');
-  console.log(JSON.stringify(new_chartData_test, null, 2));
-
-
-  // shell.openExternal(`http://erp.test/token/${user.apiResponse.secret}`);
-  
-  console.log('jdsfksdj new')
-
-  var demo = Notification.isSupported()
-  console.log('test....', demo)
-  // LoginNotification('Inactive', 'Since 15 mint ago!')
-
-
-
-
 });
 
 
@@ -490,3 +392,6 @@ if (process.platform === 'win32')
 {
     app.setAppUserModelId('Loop Reminder')
 }
+
+
+

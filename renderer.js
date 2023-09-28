@@ -1,4 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
+
+
+
+  // Reference the DOM element where you want to display the JSON data
+  const dataDisplay = document.getElementById('data-display');
+
+  // Listen for updates from the main process
+  ipcRenderer.on('update-data', (event, jsonData) => {
+  // Update the DOM with the JSON data
+    dataDisplay.textContent = JSON.stringify(jsonData, null, 2);
+
+    window.jsonData = jsonData;
+    
+    console.log('jsonData', event);
+  });
+  
+  // Listen for updates from the main process
+  ipcRenderer.on('update-time', (event, jsonData) => {
+  // Update the DOM with the JSON data
+    dataDisplay.textContent = JSON.stringify(jsonData, null, 2);
+
+    // window.jsonData = jsonData;
+    showTimer(event)
+    
+    console.log('jsonData', event);
+  });
+
+
   
   // Only run this code if the user is on the dashboard page
   if (window.location.href.includes('index.html')) {
@@ -17,20 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // lastNameElement.innerText = `Last Name: ${userData.apiResponse.user.last_name}`;
     });
 
-
-
-    // ipcRenderer.on('idleTime', (event, userData) => {
-
-    //   const idleTime = document.getElementById('idleTime');
-
-    //   idleTime.innerText = `Idle Time: ${event} Sec`;
-
-    //   // Update your dashboard with the new data.
-    //   console.log('tetstindf...', event);
-    //   // userData contains the data you sent from the main process.
-    //   // For example, you can display it on the dashboard or update your UI elements accordingly.
-    //   // ...
-    // });
 
     ipcRenderer.on('timer', (event, userData) => {
 
@@ -92,9 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (const saveTime of saveTimes){
 
-
-      
-
       saveTime.addEventListener('click', (event) => {
         event.preventDefault();
         
@@ -102,10 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         
         console.log('saveTime clicked');
-        
+
         // remove all data from data.json file
+
+        // ipcRenderer.send('deleteIntervals');
+
         ipcRenderer.send('saveTime', { dataTime });
-        
+
       })
       
     }
@@ -140,19 +154,6 @@ async function test() {
   //   document.getElementById('screenshot-image').src = dataURL;
   // });
 }
-
-// async function takelogin() {
-//   // await window.screenshot.login()
-//   window.screenshot.login((event, dataURL) => {
-//     console.log('takelogin', dataURL);
-//     document.getElementById('screenshot-image').src = dataURL;
-//   });
-// }
-
-// document.getElementById('screenshot-button').addEventListener('click', takeScreenshot);
-
-// document.getElementById('submitlogin').addEventListener('click', takelogin);
-
 
 
 ipcRenderer.on('login-failed', (event, errorMessage) => {

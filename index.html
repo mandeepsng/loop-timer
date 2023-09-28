@@ -238,11 +238,11 @@
                     <div class="col-md-9 col-lg-7 col-xs-7 col-sm-12">
                         <!-- Tabs nav -->
                         <div class="nav flex-column nav-pills nav-pills-custom" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                            <a class="nav-link mb-3 p-3 shadow active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="false">
+                            <a class="nav-link mb-3 p-3 shadow" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home" aria-selected="false">
                                 <i class="fa fa-user-circle-o mr-2"></i>
                                 <span class="font-weight-bold small text-uppercase">Personal information</span></a>
 
-                            <a class="nav-link mb-3 p-3 shadow" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true">
+                            <a class="nav-link mb-3 p-3 shadow active" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true">
                                 <i class="fa fa-calendar-minus-o mr-2"></i>
                                 <span class="font-weight-bold small text-uppercase">Timer</span></a>
 
@@ -253,7 +253,7 @@
                     <div class="col-md-9 col-lg-7 col-xs-7 col-sm-12">
                         <!-- Tabs content -->
                         <div class="tab-content" id="v-pills-tabContent">
-                            <div class="tab-pane fade shadow rounded bg-white show active p-5" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                            <div class="tab-pane fade shadow rounded bg-white  p-5" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab">
                                 <h4 class="font-italic mb-4">Personal information</h4>
                                 <div class="container mt-5 mb-5 d-flex justify-content-center">
                                     <div class="card px-1 py-4">
@@ -283,8 +283,13 @@
                                     </div>
                                 </div>
                             </div>
+
+
+                            <div id="data-display">
+                                <!-- JSON data will be displayed here -->
+                            </div>
                             
-                            <div class="tab-pane fade shadow rounded bg-white p-5" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                            <div class="tab-pane fade shadow rounded bg-white p-5 show active" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                                 <h4 class="font-italic mb-4">Timer</h4>
 
                                 <main class="app">
@@ -368,9 +373,11 @@
 
         // function creating the timer
         // accepting as argument a number of seconds, setting up an interval to update the UI every second as to show the passage of time
-        function timer(seconds) {
+        function timerddd(seconds) {
             // immediately clear any, if existing, intervals
             clearInterval(intervalID);
+
+            console.log(`window.intervalIds = > ${window.intervalIds}`)
 
             // create two dates instances, one for the moment in which the timer begins, one for the moment in which it should end
             const now = Date.now();
@@ -397,18 +404,27 @@
                     console.log(missingSeconds + " seconds")
                     console.log(then + " then")
 
+
+                    ipcRenderer.send('saveTime', { missingSeconds : missingSeconds, totalSeconds: totalSeconds , intervalID: intervalID  } );
+                    ipcRenderer.send('saveInterval', { intervalIIId: intervalID  } );
+
                     showTimer(missingSeconds);
 
                 // when reaching 0 clear the interval and remove the arbitrary class
                 if (missingSeconds <= -1) {
 
-                    ipcRenderer.send('notification');
+                    ipcRenderer.send('notification', { loopInteval : intervalIds   } );
 
                     appTimer.classList.remove('active');
 
                     console.log(`missingSeconds = ${missingSeconds}`)
+                    console.log(`intervalID => ${intervalID}`)
                     
-                    clearInterval(intervalID);
+                    //clearInterval(intervalID);
+
+                    intervalIds.push(intervalID);
+
+                    window.intervalIds = intervalIds;
 
                     if (intervalIds && intervalIds.length > 0) {
                         console.log('Clearing existing intervals');
@@ -425,7 +441,7 @@
             }, 1000);
 
 
-            intervalIds.push(intervalID);
+            
         }
 
 
@@ -441,12 +457,8 @@
             // ! use the parse function to store a reference to the value as an integer
             const seconds = parseInt(this.getAttribute('data-time'), 10);
             // start the timer for the selected number of seconds
-            timer(seconds);
-
+            //timer(seconds);
             var classTime = seconds;
-
-            console.log('sdfsdfsdffsd')
-
            // ipcRenderer.send('notification', { classTime });
 
         }
@@ -481,6 +493,7 @@
         // listen for the submit event on the entire form
         form.addEventListener('submit', handleSubmit);
 
+        
 
     </script>
 
