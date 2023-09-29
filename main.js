@@ -52,7 +52,7 @@ Menu.setApplicationMenu(menu)
 
 const createWindow = () => {
   win = new BrowserWindow({
-    width: 1750,
+    width: 750,
     height: 790,
     resizable: false,
     skipTaskbar: true,
@@ -63,7 +63,7 @@ const createWindow = () => {
   })
   
     // open dev tools
-    win.webContents.openDevTools()
+    // win.webContents.openDevTools()
 
 
     // Check if userData is not null, and decide which page to load.
