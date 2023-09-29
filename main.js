@@ -1,9 +1,8 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray , powerMonitor , Notification, shell , autoUpdater  } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray , powerMonitor , Notification  } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const axios = require('axios');
 const { log } = require('console');
-const common = require('./functions/common')
 
 const isWindows = process.platform === 'win32';
 
@@ -25,22 +24,22 @@ const filePath = path.join(__dirname,'dist', 'rvsdesktime Setup 1.2.4.exe');
 const exePath = path.join(__dirname, 'update.json');
 
 const menuTemplate = [  
-  // {
-  //   label: 'Home',
-  //   click: () => {
-  //     // mainWindow.loadURL('http://localhost:3007');
-  //     win.loadFile(path.join(__dirname, 'index.html'));
-  //   }
-  // },
+  {
+    label: 'Home',
+    click: () => {
+      // mainWindow.loadURL('http://localhost:3007');
+      win.loadFile(path.join(__dirname, 'index.html'));
+    }
+  },
   
-  // {
-  //   label: 'About',
-  //   click: () => {
-  //     // Create a new window when "About" is clicked
-  //     // createAboutWindow()
-  //     mainWindow.webContents.loadFile('about.html');
-  //   }
-  // },
+  {
+    label: 'About Me',
+    click: () => {
+      // Create a new window when "About" is clicked
+      // createAboutWindow()
+      win.webContents.loadFile(path.join(__dirname, 'about.html'));
+    }
+  },
   {
        role: 'quit' 
   }
@@ -53,7 +52,7 @@ Menu.setApplicationMenu(menu)
 
 const createWindow = () => {
   win = new BrowserWindow({
-    width: 750,
+    width: 1750,
     height: 790,
     resizable: false,
     skipTaskbar: true,
@@ -64,7 +63,7 @@ const createWindow = () => {
   })
   
     // open dev tools
-    // win.webContents.openDevTools()
+    win.webContents.openDevTools()
 
 
     // Check if userData is not null, and decide which page to load.
@@ -117,6 +116,31 @@ app.whenReady().then(() => {
       inactiveTimer = setTimeout(checkSystemInactivity, 120000);
     });
 
+
+
+
+    // Function to show a notification
+    function showNotification(title, message,fix) {
+      // const notification = new Notification({
+      //   title: title,
+      //   body: body,
+      // });
+        const notification = new Notification(
+          {
+            title: title ? title : 'Hey',
+            subtitle: 'Subtitle of the Notification',
+            body: message ? message : 'Take break !!',
+            silent: false,
+            icon: path.join(__dirname, 'assets/icon.png'),
+            hasReply: true,  
+            // timeoutType: fix ? 'never' : true , 
+            replyPlaceholder: 'Reply Here',
+            urgency: 'critical' 
+          }
+        );
+
+        notification.show();
+    }
 
 
 
@@ -192,10 +216,28 @@ app.whenReady().then(() => {
 
   let timeArray = [];
   
-  ipcMain.on('save', async(event, data) => {
+  ipcMain.on('save', async(event, reqdata) => {
     // Call the function in the main process
-    win.webContents.send('update-data', data);
-    saveDataToFile(data);
+    // await saveDataToFile(data);
+
+    const filePath = path.join(__dirname, 'data.json');
+    const data = JSON.stringify({ name : reqdata.name, message : reqdata.message });
+
+
+    fs.writeFileSync(path.join(__dirname, 'data.json'), JSON.stringify(reqdata, null, 2));
+
+    // try {
+    //   await fs.promises.writeFile(filePath, data, 'utf-8');
+    //   // fs.writeFileSync(filePath, data, 'utf-8');
+    //   console.log('Data saved to file:', reqdata.name);
+    // } catch (error) {
+    //   console.error('Error saving time:', error);
+    // }
+
+    // win.webContents.send('update-data', data);
+    // createWindow();
+    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    app.exit(0)
   });
 
   
@@ -248,7 +290,18 @@ app.whenReady().then(() => {
 
             // ipcRenderer.send('notification', { loopInteval : missingSeconds   } );
 
-            readUserData()
+            // readUserData()
+
+            try {
+              const rawData = fs.readFileSync(path.join(__dirname,'data.json'));
+              userData = JSON.parse(rawData);
+          
+              showNotification(userData.name, userData.message)
+          
+            } catch (error) {
+              console.error('Error reading data.json:', error);
+            }
+
             // appTimer.classList.remove('active');
 
             console.log(`missingSeconds = ${missingSeconds}`)
@@ -285,7 +338,8 @@ app.whenReady().then(() => {
     const data = JSON.stringify({ name : reqdata.name, message : reqdata.message });
 
     try {
-      await fs.promises.writeFile(filePath, data, 'utf-8');
+      // await fs.promises.writeFile(filePath, data, 'utf-8');
+      fs.writeFileSync(filePath, data, 'utf-8');
       console.log('Data saved to file:', reqdata.name);
     } catch (error) {
       console.error('Error saving time:', error);
@@ -316,11 +370,9 @@ async function stopAllScreenshotProcesses() {
 function readUserData() {
 
   try {
-    const rawData = fs.readFileSync(path.join(__dirname, 'data' ,'data.json'));
+    const rawData = fs.readFileSync(path.join(__dirname,'data.json'));
     userData = JSON.parse(rawData);
 
-    console.log('')
-    
     // const rawDataTimer = fs.readFileSync(path.join(__dirname, 'data' ,'time.json'));
     // userDataTimer = JSON.parse(rawDataTimer);
 
@@ -344,28 +396,28 @@ ipcMain.on('event2', (event, arg) => {
 });
 
 
-// Function to show a notification
-function showNotification(title, message,fix) {
-  // const notification = new Notification({
-  //   title: title,
-  //   body: body,
-  // });
-    const notification = new Notification(
-      {
-        title: title ? title : 'Hey',
-        subtitle: 'Subtitle of the Notification',
-        body: message ? message : 'Take break !!',
-        silent: false,
-        icon: path.join(__dirname, 'assets/icon.png'),
-        hasReply: true,  
-        // timeoutType: fix ? 'never' : true , 
-        replyPlaceholder: 'Reply Here',
-        urgency: 'critical' 
-      }
-    );
+// // Function to show a notification
+// function showNotification(title, message,fix) {
+//   // const notification = new Notification({
+//   //   title: title,
+//   //   body: body,
+//   // });
+//     const notification = new Notification(
+//       {
+//         title: title ? title : 'Hey',
+//         subtitle: 'Subtitle of the Notification',
+//         body: message ? message : 'Take break !!',
+//         silent: false,
+//         icon: path.join(__dirname, 'assets/icon.png'),
+//         hasReply: true,  
+//         // timeoutType: fix ? 'never' : true , 
+//         replyPlaceholder: 'Reply Here',
+//         urgency: 'critical' 
+//       }
+//     );
 
-    notification.show();
-}
+//     notification.show();
+// }
 
 
 // Function to close all windows
