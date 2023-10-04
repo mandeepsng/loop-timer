@@ -40,9 +40,16 @@ const menuTemplate = [
       win.webContents.loadFile(path.join(__dirname, 'about.html'));
     }
   },
-  {
-       role: 'quit' 
-  }
+  // {
+  //      role: 'quit' 
+  // },
+  // {
+  //   lable: 'Exit',
+  //   click: () => {
+  //     clearInterval(intervalID);
+  //     app.quit();
+  //   }
+  // }
 ]
 
 
@@ -198,6 +205,7 @@ app.whenReady().then(() => {
 
   app.on('window-all-closed', () => {
     console.log('close')
+    clearInterval(intervalID);
     // win.minimize()
     // On macOS, quit the app when all windows are closed
     // if (process.platform === 'darwin') {
@@ -234,10 +242,10 @@ app.whenReady().then(() => {
     //   console.error('Error saving time:', error);
     // }
 
-    // win.webContents.send('update-data', data);
+    win.webContents.send('update-data', data);
     // createWindow();
-    app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
-    app.exit(0)
+    // app.relaunch({ args: process.argv.slice(1).concat(['--relaunch']) })
+    // app.exit(0)
   });
 
   

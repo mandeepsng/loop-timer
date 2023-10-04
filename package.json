@@ -1,6 +1,6 @@
 {
   "name": "looptimer",
-  "version": "1.2.7",
+  "version": "1.0.1",
   "description": "Loop reminder",
   "main": "main.js",
   "scripts": {

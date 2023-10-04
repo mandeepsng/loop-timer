@@ -88,9 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
       logout.addEventListener('click', (event) => {
       event.preventDefault();
 
+      logout.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+      logout.disabled = true;
+
       const name = document.getElementById('name').value;
       const message = document.getElementById('message').value;
 
+      setTimeout(function() {
+        // Restore the original spinner icon after a delay (simulating completion)
+        logout.innerHTML = '<span class="fa fa-check"></span> Saved';
+        console.log('Saved');
+        // Optionally, re-enable the button
+        logout.disabled = false;
+      }, 2000);
       console.log('save clicked');
 
       // remove all data from data.json file
