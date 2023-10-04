@@ -204,19 +204,16 @@ app.whenReady().then(() => {
 
 
   app.on('window-all-closed', () => {
-    console.log('intervalID', intervalID)
-    clearInterval(intervalID);
-    // win.minimize()
-    // On macOS, quit the app when all windows are closed
-    // if (process.platform === 'darwin') {
-      // }
-
-      setTimeout(function() {
-        app.quit();
-      }, 4000);
-      
-
-      // app.quit();
+    // Check if intervalID is not null before attempting to clear it
+    if (intervalID !== null) {
+      console.log('Clearing intervalID', intervalID);
+      clearInterval(intervalID);
+    }
+  
+    // Quit the application after a delay
+    setTimeout(function () {
+      app.quit();
+    }, 4000);
   });
 
 
@@ -228,7 +225,6 @@ app.whenReady().then(() => {
   // });
 
 
-  let timeArray = [];
   
   ipcMain.on('save', async(event, reqdata) => {
     // Call the function in the main process
@@ -292,7 +288,9 @@ app.whenReady().then(() => {
             console.log(`intervalID => ${intervalID}`)
 
 
-            win.webContents.send('update-time', missingSeconds);
+            if (win && !win.isDestroyed()) {
+              win.webContents.send('update-time', missingSeconds);
+            }
 
             // ipcRenderer.send('saveTime', { missingSeconds : missingSeconds, totalSeconds: totalSeconds , intervalID: intervalID  } );
             // ipcRenderer.send('saveInterval', { intervalIIId: intervalID  } );
