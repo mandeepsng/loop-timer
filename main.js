@@ -204,13 +204,19 @@ app.whenReady().then(() => {
 
 
   app.on('window-all-closed', () => {
-    console.log('close')
+    console.log('intervalID', intervalID)
     clearInterval(intervalID);
     // win.minimize()
     // On macOS, quit the app when all windows are closed
     // if (process.platform === 'darwin') {
       // }
-      app.quit();
+
+      setTimeout(function() {
+        app.quit();
+      }, 4000);
+      
+
+      // app.quit();
   });
 
 
@@ -271,7 +277,6 @@ app.whenReady().then(() => {
 
     console.log(`seconds = ${seconds}`)
 
-
     // change the text of the sub-heading to show the time at which the timer will end
     // const appTimer = document.querySelector('.app__timer');
     // based on the number of hours and minutes of the `then` instance
@@ -284,6 +289,7 @@ app.whenReady().then(() => {
 
             console.log(missingSeconds + " seconds")
             console.log(then + " then")
+            console.log(`intervalID => ${intervalID}`)
 
 
             win.webContents.send('update-time', missingSeconds);
@@ -385,7 +391,7 @@ function readUserData() {
     // userDataTimer = JSON.parse(rawDataTimer);
 
 
-    showNotification(userData.name, userData.message)
+    // showNotification(userData.name, userData.message) 
     
 
   } catch (error) {
