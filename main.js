@@ -205,15 +205,12 @@ app.whenReady().then(() => {
 
   app.on('window-all-closed', () => {
     // Check if intervalID is not null before attempting to clear it
-    if (intervalID !== null) {
-      console.log('Clearing intervalID', intervalID);
-      clearInterval(intervalID);
-    }
+    clearInterval(intervalID);
   
     // Quit the application after a delay
-    setTimeout(function () {
+    // setTimeout(function () {
       app.quit();
-    }, 4000);
+    // }, 2000);
   });
 
 
