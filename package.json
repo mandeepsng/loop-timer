@@ -12,7 +12,10 @@
     "build:win": "electron-builder build --win --publish never",
     "build:linux": "electron-builder build --linux --publish never"
   },
-  "author": "Mandeep Singh",
+  "author": {
+    "name": "Mandeep Singh",
+    "email": "mandeep@rvsmedia.com"
+  },
   "license": "ISC",
   "devDependencies": {
     "electron": "^24.1.2",
@@ -32,7 +35,7 @@
     "stream": "^0.0.2"
   },
   "build": {
-    "appId": "com.example.app",
+    "appId": "com.looptimer.app",
     "asar": false,
     "directories": {
       "output": "dist"
