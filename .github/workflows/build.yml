@@ -5,6 +5,9 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -71,15 +74,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgtk-3-0 \
-            libnotify4 \
-            libnss3 \
-            libxss1 \
-            libxtst6 \
-            libatspi2.0-0 \
-            libsecret-1-0 \
-            fakeroot \
-            rpm
+            libgtk-3-0 libnotify4 libnss3 libxss1 \
+            libxtst6 libatspi2.0-0 libsecret-1-0 \
+            fakeroot rpm
 
       - name: Install dependencies
         if: steps.cache-modules-linux.outputs.cache-hit != 'true'
@@ -95,3 +92,30 @@ jobs:
           path: |
             dist/*.AppImage
             dist/*.deb
+
+  create-draft-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+          path: release-files
+
+      - name: Download Linux build
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+          path: release-files
+
+      - name: Create Draft Release
+        run: |
+          gh release create "build-${{ github.run_number }}" \
+            --repo "${{ github.repository }}" \
+            --draft \
+            --title "Build #${{ github.run_number }}" \
+            --notes "Automated build from commit ${{ github.sha }}" \
+            release-files/*
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
