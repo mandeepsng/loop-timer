@@ -47,7 +47,7 @@ npm run dev
 
 ---
 
-## Build
+## Local Build
 
 ### Build for Windows
 
@@ -69,69 +69,115 @@ Output:
 
 ---
 
-## Release (GitHub Actions)
+## How Releases Work (GitHub Actions)
 
-### Step 1 — Create a version tag
+There are **2 ways** a release is created automatically:
+
+---
+
+### Way 1 — Every push to `master` (Draft Release)
+
+Jab bhi `master` branch pe koi code push hota hai, GitHub Actions automatically:
+
+1. Windows (`.exe`) build karta hai
+2. Linux (`.AppImage` + `.deb`) build karta hai
+3. **Draft Release** create karta hai `github.com/mandeepsng/loop-timer/releases` pe — teeno files attached hoti hain
+
+**Draft release publish karne ke liye:**
+> Releases page pe jaao → Draft dikhega → **Edit** → **Publish release**
 
 ```bash
+# Bas yeh karo — baaki sab automatic hoga
+git add .
+git commit -m "your message"
+git push origin master
+```
+
+---
+
+### Way 2 — Tag push karo (Versioned Release)
+
+Jab koi proper version release karni ho (v1.0.1, v1.0.2 etc.):
+
+```bash
+# Step 1: Tag banao
 git tag v1.0.1
+
+# Step 2: Tag push karo
 git push origin v1.0.1
 ```
 
-### What happens automatically:
+GitHub Actions `release.yml` trigger hoga aur:
+1. Windows + Linux dono build honge
+2. GitHub Releases pe files automatically upload ho jaayengi
 
-1. GitHub Actions `release.yml` workflow triggers
-2. Windows (`.exe`) and Linux (`.AppImage`, `.deb`) builds run in parallel
-3. A draft GitHub Release is created with all build files attached
-4. Go to `github.com/mandeepsng/loop-timer/releases` and publish the draft release
+---
+
+### Release Flow Summary
+
+```
+master pe push karo
+       ↓
+build-windows  +  build-linux  (parallel run)
+       ↓
+  Draft Release create hoti hai
+       ↓
+github.com/mandeepsng/loop-timer/releases
+       ↓
+  Publish karo (manually)
+```
+
+```
+git tag v1.0.x + git push origin v1.0.x
+       ↓
+build-windows  +  build-linux  (parallel run)
+       ↓
+  Published Release (automatically)
+       ↓
+github.com/mandeepsng/loop-timer/releases
+```
 
 ---
 
 ## GitHub Actions Workflows
 
-| Workflow | File | Trigger | What it does |
+| Workflow | File | Trigger | Result |
 |---|---|---|---|
-| Build | `.github/workflows/build.yml` | Push to `master` | Builds for Win + Linux, uploads as artifacts |
-| Release | `.github/workflows/release.yml` | Push a `v*` tag | Builds for Win + Linux, publishes to GitHub Releases |
-
-### Download build artifacts (without releasing)
-
-After every push to `master`, go to:
-
-```
-github.com/mandeepsng/loop-timer/actions
-```
-
-Open the latest workflow run → scroll down to **Artifacts** section → download `windows-build` or `linux-build`.
+| Build | `.github/workflows/build.yml` | Push to `master` | Draft Release with `.exe`, `.AppImage`, `.deb` |
+| Release | `.github/workflows/release.yml` | `git push origin vX.X.X` | Published Release with all files |
 
 ---
 
 ## Git Commands Reference
 
 ```bash
-# Check status
+# Check current status
 git status
 
 # Stage all changes
 git add .
 
-# Commit
+# Commit changes
 git commit -m "your message"
 
-# Push to master
+# Push to master (triggers Draft Release automatically)
 git push origin master
 
-# Create a release tag
-git tag v1.0.2
-git push origin v1.0.2
+# --- Versioned Release ---
+
+# Create a version tag
+git tag v1.0.1
+
+# Push tag (triggers Published Release automatically)
+git push origin v1.0.1
 
 # List all tags
 git tag
 
-# Delete a local tag
+# Delete a local tag (if mistake)
 git tag -d v1.0.1
 
-# Delete a remote tag
+# Delete a remote tag (if mistake)
 git push origin --delete v1.0.1
 ```
 
@@ -152,8 +198,8 @@ loop-timer/
 ├── data.json            # Saved notification settings
 ├── .github/
 │   └── workflows/
-│       ├── build.yml    # CI build workflow
-│       └── release.yml  # Release workflow
+│       ├── build.yml    # Push to master → Draft Release
+│       └── release.yml  # Tag push → Published Release
 └── package.json
 ```
 
