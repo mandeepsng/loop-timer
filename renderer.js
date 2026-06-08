@@ -15,15 +15,17 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('jsonData', event);
   });
   
-  // Listen for updates from the main process
-  ipcRenderer.on('update-time', (event, jsonData) => {
-  // Update the DOM with the JSON data
-    dataDisplay.textContent = JSON.stringify(jsonData, null, 2);
+  ipcRenderer.on('update-time', (seconds) => {
+    showTimer(seconds);
+  });
 
-    // window.jsonData = jsonData;
-    showTimer(event)
-    
-    console.log('jsonData', event);
+  ipcRenderer.on('timer-stopped', () => {
+    const appTimer = document.querySelector('.app__timer');
+    if (appTimer) {
+      appTimer.querySelector('h1').textContent = '00:00';
+      appTimer.classList.remove('active');
+    }
+    document.querySelectorAll('.saveTime').forEach(b => b.classList.remove('active-timer'));
   });
 
 
@@ -31,18 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Only run this code if the user is on the dashboard page
   if (window.location.href.includes('index.html')) {
 
-    ipcRenderer.on('sendSettings', (event, userData) => {
-
-      console.log('sendSettings ', userData, event)
-      // console.log(userData.apiResponse); // Check the content of userData.apiResponse
+    ipcRenderer.on('sendSettings', (data) => {
       const firstNameElement = document.getElementById('name');
       const message = document.getElementById('message');
-
-      // Assuming userData.apiResponse.user contains the user's information
-      firstNameElement.value = event.name;
-      message.value = event.message;
-      // firstNameElement.innerText = `First Name: ${userData.apiResponse.user.first_name}`;
-      // lastNameElement.innerText = `Last Name: ${userData.apiResponse.user.last_name}`;
+      if (firstNameElement) firstNameElement.value = data.name || '';
+      if (message) message.value = data.message || '';
     });
 
 
@@ -111,30 +106,23 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const saveTimes = document.getElementsByClassName('saveTime');
 
-  if(saveTimes.length > 0){
-
-
-    for (const saveTime of saveTimes){
-
+  if (saveTimes.length > 0) {
+    for (const saveTime of saveTimes) {
       saveTime.addEventListener('click', (event) => {
         event.preventDefault();
-        
-        const dataTime = saveTime.getAttribute('data-time');
-        
-        
-        console.log('saveTime clicked');
-
-        // remove all data from data.json file
-
-        // ipcRenderer.send('deleteIntervals');
-
+        document.querySelectorAll('.saveTime').forEach(b => b.classList.remove('active-timer'));
+        saveTime.classList.add('active-timer');
+        const dataTime = parseInt(saveTime.getAttribute('data-time'), 10);
         ipcRenderer.send('saveTime', { dataTime });
-
-      })
-      
+      });
     }
+  }
 
-
+  const stopBtn = document.getElementById('stop-timer');
+  if (stopBtn) {
+    stopBtn.addEventListener('click', () => {
+      ipcRenderer.send('stopTimer');
+    });
   }
 
 });

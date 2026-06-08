@@ -221,6 +221,29 @@
 
             body{background-color:#FFEBEE}.card{width:400px;background-color:#fff;border:none;border-radius: 12px}label.radio{cursor: pointer;width: 100%}label.radio input{position: absolute;top: 0;left: 0;visibility: hidden;pointer-events: none}label.radio span{padding: 7px 14px;border: 2px solid #eee;display: inline-block;color: #039be5;border-radius: 10px;width: 100%;height: 48px;line-height: 27px}label.radio input:checked+span{border-color: #039BE5;background-color: #81D4FA;color: #fff;border-radius: 9px;height: 48px;line-height: 27px}.form-control{margin-top: 10px;height: 48px;border: 2px solid #eee;border-radius: 10px}.form-control:focus{box-shadow: none;border: 2px solid #039BE5}.agree-text{font-size: 12px}.terms{font-size: 12px;text-decoration: none;color: #039BE5}.confirm-button{height: 50px;border-radius: 10px}
 
+            .saveTime.active-timer {
+                background: #039BE5 !important;
+                color: #fff !important;
+                border-bottom-color: #0286c7 !important;
+                font-weight: 600;
+            }
+
+            #stop-timer {
+                flex-shrink: 0;
+                width: 100%;
+                padding: 0.7rem 0.5rem;
+                background: #e53935;
+                color: #fff;
+                border: none;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                font-family: inherit;
+                cursor: pointer;
+                margin-top: 8px;
+                transition: background 0.2s;
+            }
+            #stop-timer:hover { background: #c62828; }
+
         </style>
     </head>
     <body>
@@ -302,6 +325,7 @@
                                         </div>
                                     
                                         <!-- container allowing to select the number of minutes (or seconds) to run the timer -->
+                                        <button id="stop-timer">&#9632; Stop Timer</button>
                                         <div class="app__options">
                                         <!-- immediately the option to set a custom number of minutes through a form element -->
                                         <form name="customTimer">
@@ -372,10 +396,8 @@
         }
 
 
-        // function creating the timer
-        // accepting as argument a number of seconds, setting up an interval to update the UI every second as to show the passage of time
+        // (timer logic moved to main process)
         function timerddd(seconds) {
-            // immediately clear any, if existing, intervals
             clearInterval(intervalID);
 
             console.log(`window.intervalIds = > ${window.intervalIds}`)
@@ -449,45 +471,17 @@
         
 
 
-        // target the buttons which allow to run a timer for a prescribed amount of time
-        const buttons = document.querySelectorAll('button');
-
-        // function called in response to a click event on one of the buttons
-        function handleClick() {
-            // retrieve the number of seconds described in the data.time attribute
-            // ! use the parse function to store a reference to the value as an integer
-            const seconds = parseInt(this.getAttribute('data-time'), 10);
-            // start the timer for the selected number of seconds
-            //timer(seconds);
-            var classTime = seconds;
-           // ipcRenderer.send('notification', { classTime });
-
-        }
-        // attach an event listener on each button for a click event
-        buttons.forEach(button => button.addEventListener('click', handleClick));
-
 
         // target the form detailing an integer for a selected number of minutes
         // ! it is possible to call an element by name through `document.name`
         const form = document.customTimer;
 
-        // function called in response to the submit event being fired on the form
         function handleSubmit(e) {
-            // prevent the default behavior
             e.preventDefault();
-
-           //  ipcRenderer.send('saveTime', { classTime });
-            // retrieve the value detailed in the input element
-            /* minutes is the name of the input element, which means that
-                this.minutes.value
-                targets the same element as
-                this.querySelector('input[name="minutes"])
-            */
             const minutes = parseInt(this.minutes.value, 10);
-            // start the timer for the selected number of minutes
-            timer(minutes * 60);
-
-            // clear the form of any value
+            if (isNaN(minutes) || minutes <= 0) return;
+            document.querySelectorAll('.saveTime').forEach(b => b.classList.remove('active-timer'));
+            ipcRenderer.send('saveTime', { dataTime: minutes * 60 });
             this.reset();
         }
 

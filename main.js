@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, Tray , powerMonitor , Notification  } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray, powerMonitor, Notification, screen } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const axios = require('axios');
@@ -16,7 +16,8 @@ let screenshotIntervals = []
 
 
 // Define an array to store interval IDs.
-let intervalIds = [];
+let intervalIds = []
+let notificationWindows = [];
 
 var intervalID = 0;
 
@@ -127,26 +128,41 @@ app.whenReady().then(() => {
 
 
     // Function to show a notification
-    function showNotification(title, message,fix) {
-      // const notification = new Notification({
-      //   title: title,
-      //   body: body,
-      // });
-        const notification = new Notification(
-          {
-            title: title ? title : 'Hey',
-            subtitle: 'Subtitle of the Notification',
-            body: message ? message : 'Take break !!',
-            silent: false,
-            icon: path.join(__dirname, 'assets/icon.png'),
-            hasReply: true,  
-            // timeoutType: fix ? 'never' : true , 
-            replyPlaceholder: 'Reply Here',
-            urgency: 'critical' 
-          }
-        );
+    function showNotification(title, message, fix) {
+      notificationWindows.forEach(w => { if (!w.isDestroyed()) w.close(); });
+      notificationWindows = [];
 
-        notification.show();
+      const displays = screen.getAllDisplays();
+      displays.forEach(display => {
+        const { x, y, width, height } = display.bounds;
+        const w = new BrowserWindow({
+          x, y, width, height,
+          frame: false,
+          transparent: true,
+          alwaysOnTop: true,
+          skipTaskbar: true,
+          resizable: false,
+          movable: false,
+          focusable: true,
+          webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+          }
+        });
+        w.loadFile(path.join(__dirname, 'notification.html'), {
+          query: {
+            title: title || 'Hey',
+            message: message || 'Take a break!'
+          }
+        });
+        w.setAlwaysOnTop(true, 'screen-saver');
+        notificationWindows.push(w);
+      });
+
+      setTimeout(() => {
+        notificationWindows.forEach(w => { if (!w.isDestroyed()) w.close(); });
+        notificationWindows = [];
+      }, 3000);
     }
 
 
@@ -253,6 +269,12 @@ app.whenReady().then(() => {
     timer(data.dataTime)
   });
 
+  ipcMain.on('stopTimer', () => {
+    clearInterval(intervalID);
+    intervalID = 0;
+    if (win && !win.isDestroyed()) win.webContents.send('timer-stopped');
+  });
+
 
 
   function timer(seconds) {
@@ -270,10 +292,10 @@ app.whenReady().then(() => {
 
     console.log(`seconds = ${seconds}`)
 
-    // change the text of the sub-heading to show the time at which the timer will end
-    // const appTimer = document.querySelector('.app__timer');
-    // based on the number of hours and minutes of the `then` instance
-    // appTimer.querySelector('h3').textContent = `Back @ ${then.getHours()}:${zeroPad(then.getMinutes())}`;
+    // show initial time immediately so display updates at once
+    if (win && !win.isDestroyed()) {
+      win.webContents.send('update-time', totalSeconds);
+    }
 
     // set up the interval
     intervalID = setInterval(() => {
@@ -402,6 +424,11 @@ readUserData();
 
 ipcMain.on('event2', (event, arg) => {
   console.log('Received event2 with argument:', arg);
+});
+
+ipcMain.on('close-notification', () => {
+  notificationWindows.forEach(w => { if (!w.isDestroyed()) w.close(); });
+  notificationWindows = [];
 });
 
 
