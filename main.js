@@ -162,7 +162,7 @@ app.whenReady().then(() => {
       setTimeout(() => {
         notificationWindows.forEach(w => { if (!w.isDestroyed()) w.close(); });
         notificationWindows = [];
-      }, 3000);
+      }, 7000);
     }
 
 
